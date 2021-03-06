@@ -48,8 +48,12 @@ function showMessage(message) {
 }
 
 // TODO: Add Google Sign-in.
-
-
+function onSignIn(user) {
+  var profile = user.getBasicProfile();
+  console.log(profile);
+  $('#profile .name').text(profile.getName());
+  $('#profile .email').text(profile.getEmail());
+}
 
 // TODO: Add spreadsheet control handlers.
 
