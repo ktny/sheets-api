@@ -97,3 +97,105 @@ SheetsHelper.prototype.createSpreadsheet = function(title, callback) {
     });
   });
 }
+
+SheetsHelper.prototype.sync = function(spreadsheetId, sheetId, orders, callback) {
+  var requests = [];
+  requests.push({
+    updateSheetProperties: {
+      properties: {
+        sheetId: sheetId,
+        gridProperties: {
+          rowCount: orders.length + 1,
+          columnCount: COLUMNS.length
+        }
+      },
+      fields: 'gridProperties(rowCount, columnCount)'
+    }
+  });
+  requests.push({
+    updateCells: {
+      start: {
+        sheetId: sheetId,
+        rowIndex: 1,
+        columnIndex: 0,
+      },
+      rows: buildRowsForOrders(orders),
+      fields: '*',
+    }
+  });
+  var request = {
+    spreadsheetId: spreadsheetId,
+    resource: {
+      requests: requests,
+    }
+  };
+  this.service.spreadsheets.batchUpdate(request, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    return callback();
+  })
+}
+
+function buildRowsForOrders(orders) {
+  return orders.map(function(order) {
+    var cells = COLUMNS.map(function(column) {
+      switch (column.field) {
+        case 'unitsOrdered':
+          return {
+            userEnteredValue: {
+              numberValue: order.unitsOrdered
+            },
+            userEnteredFormat: {
+              numberFormat: {
+                type: 'NUMBER',
+                pattern: '#,##0',
+              }
+            }
+          };
+          braek;
+        case 'unitPrice':
+          return {
+            userEnteredValue: {
+              numberValue: order.unitPrice
+            },
+            userEnteredFormat: {
+              numberFormat: {
+                type: 'CURRENCY',
+                pattern: '"$"#,##0.00'
+              }
+            }
+          };
+          break;
+        case 'status':
+          return {
+            userEnteredValue: {
+              stringValue: order.status
+            },
+            dataValidation: {
+              condition: {
+                type: 'ONE_OF_LIST',
+                values: [
+                  { userEnteredValue: 'PENDING' },
+                  { userEnteredValue: 'SHIPPED' },
+                  { userEnteredValue: 'DELIVERED' }
+                ]
+              },
+              strict: true,
+              showCustomUi: true
+            }
+          };
+          break;
+        default:
+          return {
+            userEnteredValue: {
+              stringValue: order[column.field].toString()
+            }
+          };
+      }
+    });
+    return {
+      values: cells
+    };
+  })
+}
