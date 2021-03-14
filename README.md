@@ -29,3 +29,11 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 ```
+
+### Getting started simply
+
+[Integrating Google Sign-In into your web app](https://developers.google.com/identity/sign-in/web/sign-in)
+
+```sh
+node index.js
+```
